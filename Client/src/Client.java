@@ -10,6 +10,7 @@ public class Client {
     private BufferedReader in;
     private PrintWriter out;
     private HashSet<String> onlineUsers;
+    private String username;
 
     public boolean connectedToServer() {
         try {
@@ -47,7 +48,6 @@ public class Client {
         onlineUsers = new HashSet<>();
         try {
             Scanner scanner = new Scanner(System.in);
-            String username;
             String response = "";
             while (!response.equals("Join successful")) {
                 System.out.print("Enter a username to start: ");
@@ -59,9 +59,33 @@ public class Client {
             }
             System.out.println("You have joined successfully");
             startEventReceiver();
+            startEventSender();
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void startEventSender() {
+        Thread senderThread = new Thread(this::eventSenderLoop);
+        senderThread.start();
+    }
+
+    private void eventSenderLoop() {
+        Scanner scanner = new Scanner(System.in);
+        while (!socket.isClosed()) {
+            System.out.print("Enter action: ");
+            String message = scanner.nextLine();
+            out.println(message);
+            out.flush();
+
+            if (message.equalsIgnoreCase("leave " + username)) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -85,6 +109,10 @@ public class Client {
                         onlineUsers.remove(event[1]);
                         System.out.println(line);
                     }
+                }
+                if (line.equals("Leave successful")) {
+                    socket.close();
+                    return;
                 }
                 line = in.readLine();
             }

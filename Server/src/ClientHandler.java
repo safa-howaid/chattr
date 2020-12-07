@@ -82,16 +82,18 @@ public class ClientHandler implements Runnable {
             username = request[1];
             if (server.getConnectionMap().containsKey(username)) {
                 out.println("Leave successful");
+                out.flush();
                 server.getConnectionMap().remove(username);
                 broadcastServerMessage("offline " + username);
-                clientSocket.close();
             }
             else {
                 out.println("Username " + username + " does not exist.");
+                out.flush();
             }
         }
         else {
             out.println("Invalid use of command: leave <username>");
+            out.flush();
         }
     }
 
