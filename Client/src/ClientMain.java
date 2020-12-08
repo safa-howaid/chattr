@@ -3,7 +3,7 @@ public class ClientMain {
         Client client = new Client();
 
         if (client.connectedToServer()) {
-            client.runClientEcho();
+            client.runClient();
         }
     }
 }
