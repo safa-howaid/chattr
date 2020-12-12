@@ -1,22 +1,23 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Scanner;
 
 public class Client {
     private static final String SERVER_NAME = "localhost";
     private static final int SERVER_PORT_NUMBER = Server.PORT_NUMBER;
     private Socket socket;
-    private BufferedReader in;
-    private PrintWriter out;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
     private HashSet<String> onlineUsers;
+    private ArrayList<Message> messages;
     private String username;
 
     public boolean connectedToServer() {
         try {
             socket = new Socket(SERVER_NAME, SERVER_PORT_NUMBER);
-            in = new BufferedReader(new InputStreamReader( socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream());
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
             return true;
         } catch (IOException e) {
             System.err.println("Unable to connect to server at port " + SERVER_PORT_NUMBER);
@@ -24,101 +25,58 @@ public class Client {
         return false;
     }
 
-    public void runClientEcho() {
+    public boolean attemptJoin(String username) {
         try {
-            Scanner scanner = new Scanner(System.in);
-            String line;
-            while (true) {
-                System.out.print("Enter a message or quit: ");
-                line = scanner.nextLine();
-                out.println(line);
-                out.flush();
-                if (line.equals("quit")) {
-                    break;
-                }
-                System.out.println(in.readLine());
+            out.writeObject(new Join(username));
+
+            Object response  = in.readObject();
+            System.out.println(response);
+            if (response instanceof Success) {
+                this.username = username;
+                onlineUsers = ((Success) response).onlineUsers;
+                messages = ((Success) response).messages;
+                return true;
             }
-            socket.close();
-        } catch (IOException e) {
+            else return false;
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
-    public void runClient() {
-        onlineUsers = new HashSet<>();
-        try {
-            Scanner scanner = new Scanner(System.in);
-            String response = "";
-            while (!response.equals("Join successful")) {
-                System.out.print("Enter a username to start: ");
-                username = scanner.nextLine();
-                out.println("join " + username);
-                out.flush();
-                response = in.readLine();
-                System.out.println(response);
-            }
-            System.out.println("You have joined successfully");
-            startEventReceiver();
-            startEventSender();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void startEventSender() {
-        Thread senderThread = new Thread(this::eventSenderLoop);
-        senderThread.start();
-    }
-
-    private void eventSenderLoop() {
-        Scanner scanner = new Scanner(System.in);
-        while (!socket.isClosed()) {
-            System.out.print("Enter action: ");
-            String message = scanner.nextLine();
-            out.println(message);
-            out.flush();
-
-            if (message.equalsIgnoreCase("leave " + username)) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private void startEventReceiver() {
+    public void startEventReceiver() {
+        // Start a new thread for receiving events
         Thread receiverThread = new Thread(this::eventReceiverLoop);
         receiverThread.start();
     }
 
     private void eventReceiverLoop() {
         try {
-            String line = in.readLine();
-            while (line != null) {
-                String[] event = line.split(" ");
-                if (event.length > 0) {
-                    String command = event[0];
-                    if (command.equalsIgnoreCase("online")) {
-                        onlineUsers.add(event[1]);
-                        System.out.println(line);
-                    }
-                    else if (command.equalsIgnoreCase("offline")) {
-                        onlineUsers.remove(event[1]);
-                        System.out.println(line);
-                    }
+            Object event;
+            while (true) {
+                event = in.readObject();
+
+                if (event instanceof Join) {
+                    onlineUsers.add(((Join) event).username);
+                    messages.add(new Message("SERVER", ((Join) event).username + " has joined"));
+//                    Display join system message on console for testing
+//                    System.out.println("SERVER: " + ((Join) event).username + " has joined");
                 }
-                if (line.equals("Leave successful")) {
-                    socket.close();
-                    return;
+                else if (event instanceof Leave) {
+                    onlineUsers.remove(((Leave) event).username);
+                    messages.add(new Message("SERVER", ((Leave) event).username + " has left"));
+//                    Display leave system message on console for testing
+//                    System.out.println("SERVER: " + ((Join) event).username + " has joined");
                 }
-                line = in.readLine();
+                else if (event instanceof Message) {
+                    messages.add((Message) event);
+//                    Display message received on console for testing
+//                    System.out.println(((Message) event).username + ": " + ((Message) event).message);
+                }
+                System.out.println(event);
             }
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
     }
 }

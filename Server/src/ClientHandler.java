@@ -1,10 +1,11 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.HashSet;
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
-    private BufferedReader in;
-    private PrintWriter out;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
     private String username;
     private Server server;
 
@@ -14,8 +15,8 @@ public class ClientHandler implements Runnable {
         this.server = server;
         username = null;
         try {
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            out = new PrintWriter(clientSocket.getOutputStream());
+            in  = new ObjectInputStream(clientSocket.getInputStream());
+            out = new ObjectOutputStream(clientSocket.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -23,108 +24,84 @@ public class ClientHandler implements Runnable {
 
     private void requestHandler() {
         try {
-            String line = in.readLine();
-            while (line != null) {
-                String[] request = line.split(" ");
-                if (request.length > 0) {
-                    String command = request[0];
-                    if (command.equalsIgnoreCase("join")) {
-                        System.out.println(line);
-                        handleJoinRequest(request);
-                    }
-                    else if (command.equalsIgnoreCase("leave")) {
-                        handleLeaveRequest(request);
-                    }
-                    else {
-                        out.println("Invalid command " + request[0]);
-                    }
-                    out.flush();
+            Object request;
+            while (true) {
+                request = in.readObject();
+
+                if (request instanceof Join) {
+                    handleJoinRequest((Join) request);
                 }
-                line = in.readLine();
+                else if (request instanceof Leave) {
+                    handleLeaveRequest((Leave) request);
+                }
+                else if (request instanceof Message) {
+                    handleMessageRequest((Message) request);
+                }
+                System.out.println(request);
             }
-            clientSocket.close();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleMessageRequest(Message request) {
+        // Save the message to the server and forward it to all other clients
+        try {
+            server.getMessages().add(request);
+            broadcastEvent(request);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void handleJoinRequest(String[] request) {
-        if (request.length == 2) {
-            username = request[1];
-            if (!server.getConnectionMap().containsKey(username)) {
-                out.println("Join successful");
-                out.flush();
-                server.getConnectionMap().put(username,this);
-                broadcastServerMessage("online " + username);
+    private void handleJoinRequest(Join request) throws IOException {
+        if (!server.getConnectionMap().containsKey(request.username)) {
 
-                for (ClientHandler client: server.getConnectionMap().values()) {
-                    if (client != this) {
-                        out.println("online " + client.username);
-                        client.out.flush();
-                    }
+            // Set username and add user to server connections hashmap
+            username = request.username;
+            server.getConnectionMap().put(username,this);
+
+            // Get all online users and current chat messages send them to the user that just joined
+            HashSet<String> onlineUsers = new HashSet<>();
+            for (ClientHandler client: server.getConnectionMap().values()) {
+                if (client != this) {
+                    onlineUsers.add(client.getUsername());
                 }
             }
-            else {
-                out.println("Username " + username + " already exists.");
-                out.flush();
-            }
+            out.writeObject(new Success(onlineUsers, server.getMessages()));
 
+            // Tell all other clients that a user has joined
+            broadcastEvent(request);
         }
         else {
-            out.println("Invalid use of command: join <username>");
-            out.flush();
-
+            out.writeObject(new Fail());
         }
     }
 
-    private void handleLeaveRequest(String[] request) throws IOException {
-        if (request.length == 2) {
-            username = request[1];
-            if (server.getConnectionMap().containsKey(username)) {
-                out.println("Leave successful");
-                out.flush();
-                server.getConnectionMap().remove(username);
-                broadcastServerMessage("offline " + username);
-            }
-            else {
-                out.println("Username " + username + " does not exist.");
-                out.flush();
-            }
-        }
-        else {
-            out.println("Invalid use of command: leave <username>");
-            out.flush();
+    private void handleLeaveRequest(Leave request) throws IOException {
+        if (server.getConnectionMap().containsKey(request.username)) {
+
+            // Set username to null and remove user from server connections hashmap
+            username = null;
+            server.getConnectionMap().remove(username);
+
+            // Tell all other clients that a user has left
+            broadcastEvent(request);
         }
     }
 
-    public void broadcastServerMessage(String message) {
+
+    public void broadcastEvent(ClientEvent event) throws IOException {
+        // Go through each connected client and send the event to all of them except the current one
         for (ClientHandler client: server.getConnectionMap().values()) {
             if (client != this) {
-                client.out.println(message);
-                client.out.flush();
+                client.out.writeObject(event);
             }
         }
     }
 
     public String getUsername() {
         return username;
-    }
-
-    /**
-     * A method that was used for testing server/client connections
-     */
-    private void runServerEcho() {
-        try {
-            String line = in.readLine();
-            while (line != null && !line.equals("quit")) {
-                out.println("The server received the following message: " + line);
-                out.flush();
-                line = in.readLine();
-            }
-            clientSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
