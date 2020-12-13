@@ -6,16 +6,13 @@ import javafx.scene.layout.Pane;
 public class StartupView extends Pane {
     private TextField username;
     private Button join_chat;
-    private Client model;
 
-    public StartupView(Client model) {
-        this.model = model;
+    public StartupView() {
+        Label title = new Label("Chattr");
+        title.relocate(700*5.3/14,475/7.1);
+        title.setStyle("-fx-font: bold 62 arial; -fx-base: rgb(170,0,0); -fx-text-fill: rgb(0,0,0);");
 
-        Label title = new Label("Internet Relay Chat");
-        title.relocate(700*3.5/14,475/7.1);
-        title.setStyle("-fx-font: 42 arial; -fx-base: rgb(170,0,0); -fx-text-fill: rgb(0,0,0);");
-
-        Label input = new Label("Enter a username to start");
+        Label input = new Label("Enter a username to start:");
         input.relocate(700*4.5/14 + 15,475*2.8/7.1);
         input.setStyle("-fx-font: 22 arial; -fx-base: rgb(170,0,0); -fx-text-fill: rgb(0,0,0);");
 

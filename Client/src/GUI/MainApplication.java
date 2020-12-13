@@ -10,15 +10,6 @@ import javafx.stage.Stage;
 
 
 public class MainApplication extends Application {
-    //create a startupscene
-    //get the input of the user
-    //when GUI gets the username, make the loading view
-    //send the username to server
-    //wait until get the acceptance
-    //if denied set the field bound to red
-    //add a label under the button, invalid username
-    //if accepted
-    //change the scene to chatroom
     Client model;
     StartupView startupView;
     ChatroomView chatroomView;
@@ -26,7 +17,7 @@ public class MainApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
         model = new Client();
-        startupView = new StartupView(model);
+        startupView = new StartupView();
         chatroomView = new ChatroomView(model);
 
         primaryStage.setScene(new Scene(startupView,700,475));
@@ -45,8 +36,6 @@ public class MainApplication extends Application {
 
                 // Added to stop JavaFX thread error
                 Platform.runLater(this::run);
-
-
             }
         });
 
@@ -79,6 +68,8 @@ public class MainApplication extends Application {
             return true;
 
         }
+        Alert unableToConnect = new Alert(Alert.AlertType.ERROR, "Unable to connect to server, make sure that server is running.");
+        unableToConnect.showAndWait();
         return false;
 
     }
@@ -93,7 +84,7 @@ public class MainApplication extends Application {
     }
 
     private void run() {
-//update application thread
+        //update application thread
         model.getMessages().addListener((ListChangeListener<Message>) change -> chatroomView.update());
 
         model.getOnlineUsers().addListener((ListChangeListener<String>) change -> chatroomView.update());
