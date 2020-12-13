@@ -5,7 +5,7 @@ import java.util.HashSet;
 
 public class Client {
     private static final String SERVER_NAME = "localhost";
-    private static final int SERVER_PORT_NUMBER = Server.PORT_NUMBER;
+    private static final int SERVER_PORT_NUMBER = 7878;
     private Socket socket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
@@ -42,6 +42,28 @@ public class Client {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public void sendMessage(String message) {
+        try {
+            Message newMessage = new Message(username, message);
+            out.writeObject(newMessage);
+            messages.add(newMessage);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void leaveChat() {
+        try {
+            if (username != null) {
+                out.writeObject(new Leave(username));
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void startEventReceiver() {

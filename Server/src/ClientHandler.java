@@ -81,9 +81,11 @@ public class ClientHandler implements Runnable {
     private void handleLeaveRequest(Leave request) throws IOException {
         if (server.getConnectionMap().containsKey(request.username)) {
 
-            // Set username to null and remove user from server connections hashmap
-            username = null;
+            // Remove user from server connections hashmap
             server.getConnectionMap().remove(username);
+
+            // Set username to null
+            username = null;
 
             // Tell all other clients that a user has left
             broadcastEvent(request);
