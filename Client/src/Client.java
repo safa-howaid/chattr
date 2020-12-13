@@ -1,3 +1,7 @@
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -11,8 +15,8 @@ public class Client {
     private Socket socket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
-    private HashSet<String> onlineUsers;
-    private ArrayList<Message> messages;
+    private ObservableList<String> onlineUsers;
+    private ObservableList<Message> messages;
     private String username;
 
     public boolean connectedToServer() {
@@ -35,8 +39,8 @@ public class Client {
             System.out.println(response);
             if (response instanceof Success) {
                 this.username = username;
-                onlineUsers = ((Success) response).onlineUsers;
-                messages = ((Success) response).messages;
+                onlineUsers = FXCollections.observableArrayList(((Success) response).onlineUsers);
+                messages = FXCollections.observableArrayList(((Success) response).messages);
                 return true;
             } // the username will not be deleted in the server, but it will be deleted in other threads
             else return false;
@@ -85,18 +89,18 @@ public class Client {
                     onlineUsers.add(((Join) event).username);
                     messages.add(new Message("SERVER", ((Join) event).username + " has joined"));
 //                    Display join system message on console for testing
-//                    System.out.println("SERVER: " + ((Join) event).username + " has joined");
+                    System.out.println("SERVER: " + ((Join) event).username + " has joined");
                 }
                 else if (event instanceof Leave) {
                     onlineUsers.remove(((Leave) event).username);
                     messages.add(new Message("SERVER", ((Leave) event).username + " has left"));
 //                    Display leave system message on console for testing
-//                    System.out.println("SERVER: " + ((Join) event).username + " has joined");
+                    System.out.println("SERVER: " + ((Leave) event).username + " has left");
                 }
                 else if (event instanceof Message) {
                     messages.add((Message) event);
 //                    Display message received on console for testing
-//                    System.out.println(((Message) event).username + ": " + ((Message) event).message);
+                    System.out.println(event);
                 }
                 System.out.println(event);
             }
@@ -105,11 +109,11 @@ public class Client {
         }
     }
 
-    public HashSet<String> getOnlineUsers() {
+    public ObservableList<String> getOnlineUsers() {
         return onlineUsers;
     }
 
-    public ArrayList<Message> getMessages() {
+    public ObservableList<Message> getMessages() {
         return messages;
     }
 }

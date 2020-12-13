@@ -8,7 +8,7 @@ public class ChatroomView extends Pane {
     private ListView<String> userList;
     private String[] messages;
     private String[] users;
-    private ObservableList<String> obsMessages;
+    private ObservableList<Message> obsMessages;
     private ObservableList<String> obsUsers;
     private TextField newMessage;
     private Button send_button;
@@ -23,11 +23,6 @@ public class ChatroomView extends Pane {
 
         userList = new ListView<>();
         users = new String[]{"User1", "User2"};
-
-        obsMessages = FXCollections.observableArrayList(messages);
-        obsUsers = FXCollections.observableArrayList(users);
-
-
 
         chatList.relocate(pixelLength(0.6),pixelWidth(0.8));
         chatList.setPrefSize(pixelLength(9.3)-pixelLength(0.6),pixelWidth(5.8)-pixelWidth(0.8));
@@ -50,7 +45,7 @@ public class ChatroomView extends Pane {
         chatBoxLabel.setStyle("-fx--font: 32 arial;");
         chatBoxLabel.relocate(pixelLength(4.6),pixelWidth(0.4));
 
-        userListLabel = new Label("list of users");
+        userListLabel = new Label("Online Users");
         userListLabel.setStyle("-fx--font: 32 arial;");
         userListLabel.relocate(pixelLength(10.8),pixelWidth(0.4));
 
@@ -70,14 +65,6 @@ public class ChatroomView extends Pane {
         return send_button;
     }
 
-    public Label getChatBoxLabel() {
-        return chatBoxLabel;
-    }
-
-    public Label getUserListLabel() {
-        return userListLabel;
-    }
-
     public ListView<Message> getChatList() {
         return chatList;
     }
@@ -90,4 +77,25 @@ public class ChatroomView extends Pane {
         return newMessage;
     }
 
+    public void update() {
+
+        userList.setItems(FXCollections.observableArrayList(model.getOnlineUsers()));
+        chatList.setItems(FXCollections.observableList(model.getMessages()));
+    }
+
+    public ObservableList<Message> getObsMessages() {
+        return obsMessages;
+    }
+
+    public ObservableList<String> getObsUsers() {
+        return obsUsers;
+    }
+
+    public void setObsMessages(ObservableList<Message> message) {
+        obsMessages = message;
+    }
+
+    public void setObsUsers(ObservableList<String> user) {
+        obsUsers = user;
+    }
 }
