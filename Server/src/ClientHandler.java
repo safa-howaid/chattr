@@ -33,6 +33,7 @@ public class ClientHandler implements Runnable {
                 }
                 else if (request instanceof Leave) {
                     handleLeaveRequest((Leave) request);
+                    break;
                 }
                 else if (request instanceof Message) {
                     handleMessageRequest((Message) request);
@@ -89,6 +90,11 @@ public class ClientHandler implements Runnable {
 
             // Tell all other clients that a user has left
             broadcastEvent(request);
+
+            // Close connection and resources
+            in.close();
+            out.close();
+            clientSocket.close();
         }
     }
 

@@ -61,9 +61,10 @@ public class Client {
         try {
             if (username != null) {
                 out.writeObject(new Leave(username));
+                Thread.sleep(5000);
             }
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -108,12 +109,7 @@ public class Client {
         return onlineUsers;
     }
 
-    public String[] getMessages() {
-        int length = messages.size();
-        String[] messagesList = new String[length];
-        for(int i = 0; i < length; i++){
-            messagesList[i] = messages.get(i).toString();
-        }
-        return messagesList;
+    public ArrayList<Message> getMessages() {
+        return messages;
     }
 }

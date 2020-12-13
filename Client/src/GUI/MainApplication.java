@@ -7,7 +7,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 
-public class MainGUI extends Application {
+public class MainApplication extends Application {
     //create a startupscene
     //get the input of the user
     //when GUI gets the username, make the loading view
@@ -18,31 +18,31 @@ public class MainGUI extends Application {
     //if accepted
     //change the scene to chatroom
     Client model;
-    StartupViewGUI view1;
-    ChatRoomGUI view2;
+    StartupView startupView;
+    ChatroomView chatroomView;
 
     @Override
     public void start(Stage primaryStage) {
         model = new Client();
-        view1 = new StartupViewGUI(model);
-        view2 = new ChatRoomGUI(model);
+        startupView = new StartupView(model);
+        chatroomView = new ChatroomView(model);
 
 
 
-        primaryStage.setScene(new Scene(view1,700,475));
+        primaryStage.setScene(new Scene(startupView,700,475));
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        view1.getJoin_chat().setOnAction(event -> {
+        startupView.getJoin_chat().setOnAction(event -> {
             if(handle_join_chat()){
                 setView2();
-                primaryStage.setScene(new Scene(view2,700,475));
+                primaryStage.setScene(new Scene(chatroomView,700,475));
                 primaryStage.setResizable(false);
 
             }
         });
 
-        view2.getSend_button().setOnAction(actionEvent -> handle_sendMessage());
+        chatroomView.getSend_button().setOnAction(actionEvent -> handle_sendMessage());
     }
 
     @Override
@@ -54,8 +54,8 @@ public class MainGUI extends Application {
         //create the loading circle
 
         if (model.connectedToServer()) {
-            if (!model.attemptJoin(view1.getUsername().getText())){
-                view1.getUsername().setText("");
+            if (!model.attemptJoin(startupView.getUsername().getText())){
+                startupView.getUsername().setText("");
                 Alert invalidUsername = new Alert(Alert.AlertType.ERROR, "Username in use, please try again.");
                 invalidUsername.showAndWait();
                 return false;
@@ -69,13 +69,13 @@ public class MainGUI extends Application {
 
 
     public void handle_sendMessage(){
-        model.sendMessage(view2.getNewMessage().getText());
-        view2.getNewMessage().setText("");
+        model.sendMessage(chatroomView.getNewMessage().getText());
+        chatroomView.getNewMessage().setText("");
     }
 
     public void setView2() {
-        view2.getUserList().setItems(FXCollections.observableArrayList(model.getOnlineUsers()));
-        view2.getChatList().setItems(FXCollections.observableArrayList(model.getMessages()));
+        chatroomView.getUserList().setItems(FXCollections.observableArrayList(model.getOnlineUsers()));
+        chatroomView.getChatList().setItems(FXCollections.observableArrayList(model.getMessages()));
     }
 
     public static void main(String[] args) {
