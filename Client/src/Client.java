@@ -1,4 +1,6 @@
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,7 +38,7 @@ public class Client {
                 onlineUsers = ((Success) response).onlineUsers;
                 messages = ((Success) response).messages;
                 return true;
-            }
+            } // the username will not be deleted in the server, but it will be deleted in other threads
             else return false;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -100,5 +102,18 @@ public class Client {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public HashSet<String> getOnlineUsers() {
+        return onlineUsers;
+    }
+
+    public String[] getMessages() {
+        int length = messages.size();
+        String[] messagesList = new String[length];
+        for(int i = 0; i < length; i++){
+            messagesList[i] = messages.get(i).toString();
+        }
+        return messagesList;
     }
 }
