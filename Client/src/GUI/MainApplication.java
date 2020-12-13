@@ -1,8 +1,11 @@
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 
@@ -30,6 +33,10 @@ public class MainApplication extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
 
+
+        chatroomView.getNewMessage().setOnKeyReleased(this::handle);
+
+
         startupView.getJoin_chat().setOnAction(event -> {
             if(handleJoinChat()){
                 model.startEventReceiver();
@@ -37,27 +44,17 @@ public class MainApplication extends Application {
                 chatroomView.update();
 
                 // Added to stop JavaFX thread error
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        //update application thread
-                        model.getMessages().addListener(new ListChangeListener<Message>() {
-                            @Override
-                            public void onChanged(Change<? extends Message> change) {
-                                chatroomView.update();
-                            }
-                        });
-
-                        model.getOnlineUsers().addListener(new ListChangeListener<String>() {
-                            @Override
-                            public void onChanged(Change<? extends String> change) {
-                                chatroomView.update();
-                            }
-                        });
-                    }
-                });
+                Platform.runLater(this::run);
 
 
+            }
+        });
+
+        chatroomView.getNewMessage().setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+                if (chatroomView.getNewMessage().getText().length() > 0) {
+                    handleSendMessage();
+                }
             }
         });
 
@@ -89,5 +86,16 @@ public class MainApplication extends Application {
     public void handleSendMessage(){
         model.sendMessage(chatroomView.getNewMessage().getText());
         chatroomView.getNewMessage().setText("");
+    }
+
+    private void handle(KeyEvent keyEvent) {
+        chatroomView.getSend_button().setDisable(chatroomView.getNewMessage().getText().length() <= 0);
+    }
+
+    private void run() {
+//update application thread
+        model.getMessages().addListener((ListChangeListener<Message>) change -> chatroomView.update());
+
+        model.getOnlineUsers().addListener((ListChangeListener<String>) change -> chatroomView.update());
     }
 }

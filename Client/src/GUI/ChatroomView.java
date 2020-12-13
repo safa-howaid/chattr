@@ -36,10 +36,12 @@ public class ChatroomView extends Pane {
         newMessage.relocate(pixelLength(0.6),pixelWidth(6.1));
         newMessage.setPrefSize(pixelLength(7.6)-pixelLength(0.6),pixelWidth(6.8)-pixelWidth(6.1));
 
+
         send_button = new Button("Send");
         send_button.setStyle("-fx--font: 22 arial;");
         send_button.relocate(pixelLength(7.9),pixelWidth(6.1));
         send_button.setPrefSize(pixelLength(9.3)-pixelLength(7.9),pixelWidth(6.8)-pixelWidth(6.1));
+        send_button.setDisable(true);
 
         chatBoxLabel = new Label("Chat");
         chatBoxLabel.setStyle("-fx--font: 32 arial;");
