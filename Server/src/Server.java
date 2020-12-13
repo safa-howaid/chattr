@@ -37,4 +37,9 @@ public class Server {
     public ArrayList<Message> getMessages() {
         return messages;
     }
+
+    public static void main(String[] args) {
+        Server server = new Server();
+        server.start();
+    }
 }
