@@ -3,6 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Server {
     public static final int PORT_NUMBER = 7878;
@@ -41,5 +42,15 @@ public class Server {
     public static void main(String[] args) {
         Server server = new Server();
         server.start();
+    }
+
+    public ArrayList<String> getTimes() {
+        ArrayList<String> times = new ArrayList<>();
+        for(int i = 0; i<getMessages().size(); i++){
+            times.add(getMessages().get(i).getTime());
+        }
+        System.out.println(times.toString());
+        return times;
+
     }
 }

@@ -69,7 +69,8 @@ public class ClientHandler implements Runnable {
                     onlineUsers.add(client.getUsername());
                 }
             }
-            out.writeObject(new Success(onlineUsers, server.getMessages()));
+
+            out.writeObject(new Success(onlineUsers, server.getMessages(), server.getTimes()));
 
             // Tell all other clients that a user has joined
             broadcastEvent(request);

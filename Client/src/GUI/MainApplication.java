@@ -1,9 +1,15 @@
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
+
+import java.time.format.DateTimeFormatter;
 
 
 public class MainApplication extends Application {
@@ -23,44 +29,47 @@ public class MainApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
         model = new Client();
-        startupView = new StartupView(model);
+        startupView = new StartupView();
         chatroomView = new ChatroomView(model);
 
-        primaryStage.setScene(new Scene(startupView,700,475));
+        Scene chatroomScene = new Scene(chatroomView, 700, 475);
+        Scene startupScene = new Scene(startupView,700,475);
+
+        primaryStage.setScene(startupScene);
         primaryStage.setResizable(false);
         primaryStage.show();
+
+        chatroomView.getNewMessage().setOnKeyReleased(this::handle);
+
+        chatroomView.getLeaveButton().setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent actionEvent) {
+                model.leaveChat();
+                primaryStage.setScene(startupScene);
+            }
+        });
 
         startupView.getJoin_chat().setOnAction(event -> {
             if(handleJoinChat()){
                 model.startEventReceiver();
-                primaryStage.setScene(new Scene(chatroomView,700,475));
+                primaryStage.setScene(chatroomScene);
+                chatroomView.getUsernameLabel().setText("You logged in as: "+model.getUsername());
                 chatroomView.update();
 
                 // Added to stop JavaFX thread error
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        //update application thread
-                        model.getMessages().addListener(new ListChangeListener<Message>() {
-                            @Override
-                            public void onChanged(Change<? extends Message> change) {
-                                chatroomView.update();
-                            }
-                        });
+                Platform.runLater(this::run);
 
-                        model.getOnlineUsers().addListener(new ListChangeListener<String>() {
-                            @Override
-                            public void onChanged(Change<? extends String> change) {
-                                chatroomView.update();
-                            }
-                        });
-                    }
-                });
 
 
             }
         });
 
+        chatroomView.getNewMessage().setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+                if (chatroomView.getNewMessage().getText().length() > 0) {
+                    handleSendMessage();
+                }
+            }
+        });
 
         chatroomView.getSend_button().setOnAction(actionEvent -> handleSendMessage());
     }
@@ -89,5 +98,18 @@ public class MainApplication extends Application {
     public void handleSendMessage(){
         model.sendMessage(chatroomView.getNewMessage().getText());
         chatroomView.getNewMessage().setText("");
+    }
+
+    private void handle(KeyEvent keyEvent) {
+        chatroomView.getSend_button().setDisable(chatroomView.getNewMessage().getText().length() <= 0);
+    }
+
+    private void run() {
+//update application thread
+        model.getMessages().addListener((ListChangeListener<Message>) change -> chatroomView.update());
+
+        model.getOnlineUsers().addListener((ListChangeListener<String>) change -> chatroomView.update());
+
+        model.getTimes().addListener((ListChangeListener<String>) change -> chatroomView.update());
     }
 }

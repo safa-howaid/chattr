@@ -6,10 +6,10 @@ import javafx.scene.layout.Pane;
 public class StartupView extends Pane {
     private TextField username;
     private Button join_chat;
-    private Client model;
 
-    public StartupView(Client model) {
-        this.model = model;
+
+    public StartupView() {
+
 
         Label title = new Label("Internet Relay Chat");
         title.relocate(700*3.5/14,475/7.1);

@@ -3,17 +3,23 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 
+import java.time.format.DateTimeFormatter;
+
 public class ChatroomView extends Pane {
     private ListView<Message> chatList;
     private ListView<String> userList;
+    private ListView<String> timeList;
     private String[] messages;
     private String[] users;
+    private String[] times;
     private ObservableList<Message> obsMessages;
     private ObservableList<String> obsUsers;
     private TextField newMessage;
     private Button send_button;
     private Label chatBoxLabel;
     private Label userListLabel;
+    private Label usernameLabel;
+    private Button LeaveButton;
     private Client model;
 
     public ChatroomView(Client model){
@@ -24,22 +30,31 @@ public class ChatroomView extends Pane {
         userList = new ListView<>();
         users = new String[]{"User1", "User2"};
 
-        chatList.relocate(pixelLength(0.6),pixelWidth(0.8));
-        chatList.setPrefSize(pixelLength(9.3)-pixelLength(0.6),pixelWidth(5.8)-pixelWidth(0.8));
+        timeList = new ListView<>();
+        times = new String[]{};
 
+
+        chatList.relocate(pixelLength(0.6),pixelWidth(0.8));
+        chatList.setPrefSize(pixelLength(7.3)-pixelLength(0.6),pixelWidth(5.8)-pixelWidth(0.8));
 
         userList.relocate(pixelLength(9.7),pixelWidth(0.8));
         userList.setPrefSize(pixelLength(13.3)-pixelLength(9.7), pixelWidth(5.8)-pixelWidth(0.8));
 
+        timeList.relocate(pixelLength(7),pixelWidth(0.8));
+        timeList.setPrefSize(pixelLength(9.3)-pixelLength(7),pixelWidth(5.8)-pixelWidth(0.8));
 
         newMessage = new TextField();
         newMessage.relocate(pixelLength(0.6),pixelWidth(6.1));
-        newMessage.setPrefSize(pixelLength(7.6)-pixelLength(0.6),pixelWidth(6.8)-pixelWidth(6.1));
+        newMessage.setPrefSize(pixelLength(7)-pixelLength(0.6),pixelWidth(6.8)-pixelWidth(6.1));
 
         send_button = new Button("Send");
         send_button.setStyle("-fx--font: 22 arial;");
         send_button.relocate(pixelLength(7.9),pixelWidth(6.1));
         send_button.setPrefSize(pixelLength(9.3)-pixelLength(7.9),pixelWidth(6.8)-pixelWidth(6.1));
+
+        LeaveButton = new Button("Leave");
+        LeaveButton.setStyle("-fx--font: 22 arial;");
+        LeaveButton.relocate(pixelLength(12.6),pixelWidth(0.1));
 
         chatBoxLabel = new Label("Chat");
         chatBoxLabel.setStyle("-fx--font: 32 arial;");
@@ -49,7 +64,12 @@ public class ChatroomView extends Pane {
         userListLabel.setStyle("-fx--font: 32 arial;");
         userListLabel.relocate(pixelLength(10.8),pixelWidth(0.4));
 
-        getChildren().addAll(send_button,chatList,userList,newMessage,chatBoxLabel,userListLabel);
+        usernameLabel = new Label("");
+        usernameLabel.setStyle("-fx--font: 2ali2 Times New Roman;");
+        usernameLabel.relocate(pixelLength(0.4),pixelWidth(0.3));
+
+
+        getChildren().addAll(send_button,chatList,userList,newMessage,chatBoxLabel,userListLabel,usernameLabel,LeaveButton,timeList);
 
     }
 
@@ -81,6 +101,7 @@ public class ChatroomView extends Pane {
 
         userList.setItems(FXCollections.observableArrayList(model.getOnlineUsers()));
         chatList.setItems(FXCollections.observableList(model.getMessages()));
+        timeList.setItems(FXCollections.observableArrayList(model.getTimes()));
     }
 
     public ObservableList<Message> getObsMessages() {
@@ -97,5 +118,13 @@ public class ChatroomView extends Pane {
 
     public void setObsUsers(ObservableList<String> user) {
         obsUsers = user;
+    }
+
+    public Label getUsernameLabel() {
+        return usernameLabel;
+    }
+
+    public Button getLeaveButton() {
+        return LeaveButton;
     }
 }
