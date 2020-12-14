@@ -1,4 +1,3 @@
-import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -6,8 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashSet;
 
 public class Client {
     private static final String SERVER_NAME = "localhost";
@@ -65,10 +62,9 @@ public class Client {
         try {
             if (username != null) {
                 out.writeObject(new Leave(username));
-                Thread.sleep(5000);
             }
 
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

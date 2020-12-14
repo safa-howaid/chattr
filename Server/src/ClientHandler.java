@@ -56,7 +56,7 @@ public class ClientHandler implements Runnable {
     }
 
     private void handleJoinRequest(Join request) throws IOException {
-        if (!server.getConnectionMap().containsKey(request.username)) {
+        if (!server.getConnectionMap().containsKey(request.username) && !request.username.equalsIgnoreCase("SERVER")) {
 
             // Set username and add user to server connections hashmap
             username = request.username;

@@ -1,12 +1,12 @@
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 public class Success implements Serializable {
     HashSet<String> onlineUsers;
-    ArrayList<Message> messages;
+    LinkedList<Message> messages;
 
-    public Success(HashSet<String> onlineUsers, ArrayList<Message> messages) {
+    public Success(HashSet<String> onlineUsers, LinkedList<Message> messages) {
         this.onlineUsers = onlineUsers;
         this.messages = messages;
     }

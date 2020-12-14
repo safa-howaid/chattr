@@ -1,13 +1,17 @@
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.util.Callback;
+
+import java.time.format.DateTimeFormatter;
 
 public class ChatroomView extends Pane {
     private ListView<Message> chatList;
     private ListView<String> userList;
-    private String[] messages;
-    private String[] users;
     private ObservableList<Message> obsMessages;
     private ObservableList<String> obsUsers;
     private TextField newMessage;
@@ -19,10 +23,7 @@ public class ChatroomView extends Pane {
     public ChatroomView(Client model){
         this.model = model;
         chatList = new ListView<>();
-        messages = new String[]{"User1:Hey!", "User2:Hey! How are you?"};
-
         userList = new ListView<>();
-        users = new String[]{"User1", "User2"};
 
         chatList.relocate(pixelLength(0.6),pixelWidth(0.8));
         chatList.setPrefSize(pixelLength(9.3)-pixelLength(0.6),pixelWidth(5.8)-pixelWidth(0.8));
@@ -79,25 +80,10 @@ public class ChatroomView extends Pane {
         return newMessage;
     }
 
-    public void update() {
-
-        userList.setItems(FXCollections.observableArrayList(model.getOnlineUsers()));
+    public void updateMessages() {
         chatList.setItems(FXCollections.observableList(model.getMessages()));
     }
-
-    public ObservableList<Message> getObsMessages() {
-        return obsMessages;
-    }
-
-    public ObservableList<String> getObsUsers() {
-        return obsUsers;
-    }
-
-    public void setObsMessages(ObservableList<Message> message) {
-        obsMessages = message;
-    }
-
-    public void setObsUsers(ObservableList<String> user) {
-        obsUsers = user;
+    public void updateUserList() {
+        userList.setItems(FXCollections.observableArrayList(model.getOnlineUsers()));
     }
 }

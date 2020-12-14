@@ -12,7 +12,6 @@ public class Message extends ClientEvent implements Serializable {
 
     @Override
     public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a | LLLdd");
         return username + ": " + message;
     }
 

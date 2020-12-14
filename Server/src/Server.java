@@ -1,17 +1,17 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class Server {
     public static final int PORT_NUMBER = 7878;
     private HashMap<String, ClientHandler> current_connections;
-    private ArrayList<Message> messages;
+    private LinkedList<Message> messages;
 
     public Server() {
         current_connections = new HashMap<>();
-        messages = new ArrayList<>();
+        messages = new LinkedList<>();
     }
 
     public void start() {
@@ -21,7 +21,7 @@ public class Server {
                 Socket socket = serverSocket.accept();
                 System.out.println("Connection was established with " + socket);
 
-                //Delegate handling client request to a new thread
+                //Delegate handling each connection to a new thread
                 ClientHandler clientHandler = new ClientHandler(socket, this);
                 new Thread(clientHandler).start();
             }
@@ -34,7 +34,7 @@ public class Server {
         return current_connections;
     }
 
-    public ArrayList<Message> getMessages() {
+    public LinkedList<Message> getMessages() {
         return messages;
     }
 
