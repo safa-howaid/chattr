@@ -1,93 +1,120 @@
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 
 public class MainApplication extends Application {
-    //create a startupscene
-    //get the input of the user
-    //when GUI gets the username, make the loading view
-    //send the username to server
-    //wait until get the acceptance
-    //if denied set the field bound to red
-    //add a label under the button, invalid username
-    //if accepted
-    //change the scene to chatroom
-    Client model;
-    StartupView startupView;
-    ChatroomView chatroomView;
+    private Client client;
+    private StartupView startupView;
+    private ChatroomView chatroomView;
 
     @Override
     public void start(Stage primaryStage) {
-        model = new Client();
-        startupView = new StartupView(model);
-        chatroomView = new ChatroomView(model);
+        client = new Client();
+        startupView = new StartupView();
+        chatroomView = new ChatroomView(client);
 
-        primaryStage.setScene(new Scene(startupView,700,475));
+        Scene chatroomScene = new Scene(chatroomView, 700, 475);
+        Scene startupScene = new Scene(startupView,700,475);
+
+        primaryStage.setScene(startupScene);
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        startupView.getJoin_chat().setOnAction(event -> {
+        startupView.getUsernameTextField().setOnKeyReleased(this::handleJoinButtonDisabling);
+
+        startupView.getUsernameTextField().setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+                startupView.getJoinChatButton().fire();
+            }
+        });
+
+        startupView.getJoinChatButton().setOnAction(event -> {
             if(handleJoinChat()){
-                model.startEventReceiver();
-                primaryStage.setScene(new Scene(chatroomView,700,475));
-                chatroomView.update();
-
-                // Added to stop JavaFX thread error
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        //update application thread
-                        model.getMessages().addListener(new ListChangeListener<Message>() {
-                            @Override
-                            public void onChanged(Change<? extends Message> change) {
-                                chatroomView.update();
-                            }
-                        });
-
-                        model.getOnlineUsers().addListener(new ListChangeListener<String>() {
-                            @Override
-                            public void onChanged(Change<? extends String> change) {
-                                chatroomView.update();
-                            }
-                        });
-                    }
-                });
-
+                client.startEventReceiver();
+                primaryStage.setScene(chatroomScene);
+                moveToChatroom();
 
             }
         });
 
+        chatroomView.getNewMessage().setOnKeyReleased(this::handleSendButtonDisabling);
 
-        chatroomView.getSend_button().setOnAction(actionEvent -> handleSendMessage());
+        chatroomView.getLeaveButton().setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent actionEvent) {
+                client.leaveChat();
+                primaryStage.setScene(startupScene);
+            }
+        });
+
+        chatroomView.getNewMessage().setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+                if (chatroomView.getNewMessage().getText().length() > 0) {
+                    handleSendMessage();
+                }
+            }
+        });
+
     }
 
     @Override
     public void stop() {
-        model.leaveChat();
+        client.leaveChat();
+        Platform.exit();
+        System.exit(0);
+    }
+
+    public void moveToChatroom() {
+        chatroomView.updateMessages();
+        chatroomView.updateUserList();
+
+        chatroomView.getUsernameLabel().setText("You're logged in as: " + client.getUsername());
+
+        chatroomView.getChatList().setCellFactory(messageListView -> new MessageCell(chatroomView));
+
+        chatroomView.getSendButton().setOnAction(actionEvent -> handleSendMessage());
+
+        chatroomView.getUserList().setCellFactory(stringListView -> new UserCell());
+        client.getMessages().addListener((ListChangeListener<Message>) change -> chatroomView.updateMessages());
+        client.getOnlineUsers().addListener((ListChangeListener<String>) change -> chatroomView.updateUserList());
     }
 
     public boolean handleJoinChat() {
 
-        if (model.connectedToServer()) {
-            if (!model.attemptJoin(startupView.getUsername().getText())){
-                startupView.getUsername().setText("");
-                Alert invalidUsername = new Alert(Alert.AlertType.ERROR, "Username is already used, please try again.");
+        if (client.connectedToServer()) {
+            if (!client.attemptJoin(startupView.getUsernameTextField().getText())){
+                startupView.getUsernameTextField().setText("");
+                Alert invalidUsername = new Alert(Alert.AlertType.ERROR, "Username is already used or is invalid, please try again.");
                 invalidUsername.showAndWait();
                 return false;
             }
             return true;
 
         }
+        Alert unableToConnect = new Alert(Alert.AlertType.ERROR, "Unable to connect to server, make sure that server is running.");
+        unableToConnect.showAndWait();
         return false;
 
     }
 
     public void handleSendMessage(){
-        model.sendMessage(chatroomView.getNewMessage().getText());
+        client.sendMessage(chatroomView.getNewMessage().getText());
         chatroomView.getNewMessage().setText("");
     }
+
+    private void handleSendButtonDisabling(KeyEvent keyEvent) {
+        chatroomView.getSendButton().setDisable(chatroomView.getNewMessage().getText().length() <= 0);
+    }
+
+    private void handleJoinButtonDisabling(KeyEvent keyEvent) {
+        startupView.getJoinChatButton().setDisable(startupView.getUsernameTextField().getText().length() <= 0);
+    }
+
 }

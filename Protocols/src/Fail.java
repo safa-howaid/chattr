@@ -1,8 +1,9 @@
 import java.io.Serializable;
 
 public class Fail implements Serializable {
+    // String representation of the Fail response. Used for debugging.
     @Override
     public String toString() {
-        return  "join failed";
+        return  "Join failed";
     }
 }

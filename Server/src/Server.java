@@ -1,19 +1,24 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class Server {
-    public static final int PORT_NUMBER = 7878;
-    private HashMap<String, ClientHandler> current_connections;
-    private ArrayList<Message> messages;
+    private final int PORT_NUMBER = 7878;
+    private HashMap<String, ClientHandler> currentConnections;
+    private LinkedList<Message> messages;
 
     public Server() {
-        current_connections = new HashMap<>();
-        messages = new ArrayList<>();
+        currentConnections = new HashMap<>();
+        messages = new LinkedList<>();
     }
 
+    /*
+        Repeatedly tries to accept connections. When a client gets connected,
+         they get assigned a new thread to communicate with. This is to allow multiple clients
+         to interact with the server simultaneously.
+     */
     public void start() {
         try {
             ServerSocket serverSocket = new ServerSocket(PORT_NUMBER);
@@ -21,7 +26,7 @@ public class Server {
                 Socket socket = serverSocket.accept();
                 System.out.println("Connection was established with " + socket);
 
-                //Delegate handling client request to a new thread
+                //Delegate handling each connection to a new thread
                 ClientHandler clientHandler = new ClientHandler(socket, this);
                 new Thread(clientHandler).start();
             }
@@ -31,10 +36,10 @@ public class Server {
     }
 
     public HashMap<String, ClientHandler> getConnectionMap() {
-        return current_connections;
+        return currentConnections;
     }
 
-    public ArrayList<Message> getMessages() {
+    public LinkedList<Message> getMessages() {
         return messages;
     }
 

@@ -22,6 +22,9 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /*
+        Continuously accepts Client requests and calls the correct method to handle them
+     */
     private void requestHandler() {
         try {
             Object request;
@@ -45,8 +48,10 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /*
+        Save the message to the server and then broadcast it to all other clients
+     */
     private void handleMessageRequest(Message request) {
-        // Save the message to the server and forward it to all other clients
         try {
             server.getMessages().add(request);
             broadcastEvent(request);
@@ -56,10 +61,10 @@ public class ClientHandler implements Runnable {
     }
 
     private void handleJoinRequest(Join request) throws IOException {
-        if (!server.getConnectionMap().containsKey(request.username)) {
+        if (!server.getConnectionMap().containsKey(request.getSource()) && !request.getSource().equalsIgnoreCase("SERVER")) {
 
             // Set username and add user to server connections hashmap
-            username = request.username;
+            username = request.getSource();
             server.getConnectionMap().put(username,this);
 
             // Get all online users and current chat messages send them to the user that just joined
@@ -80,7 +85,7 @@ public class ClientHandler implements Runnable {
     }
 
     private void handleLeaveRequest(Leave request) throws IOException {
-        if (server.getConnectionMap().containsKey(request.username)) {
+        if (server.getConnectionMap().containsKey(request.getSource())) {
 
             // Remove user from server connections hashmap
             server.getConnectionMap().remove(username);
@@ -90,17 +95,13 @@ public class ClientHandler implements Runnable {
 
             // Tell all other clients that a user has left
             broadcastEvent(request);
-
-            // Close connection and resources
-            in.close();
-            out.close();
-            clientSocket.close();
         }
     }
 
-
+    /*
+        Go through each connected client and send the event to all of them except the current client
+     */
     public void broadcastEvent(ClientEvent event) throws IOException {
-        // Go through each connected client and send the event to all of them except the current one
         for (ClientHandler client: server.getConnectionMap().values()) {
             if (client != this) {
                 client.out.writeObject(event);

@@ -4,43 +4,40 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 
 public class StartupView extends Pane {
-    private TextField username;
-    private Button join_chat;
-    private Client model;
+    private TextField usernameTextField;
+    private Button joinChatButton;
 
-    public StartupView(Client model) {
-        this.model = model;
+    public StartupView() {
+        Label title = new Label("Chattr");
+        title.relocate(700*5.3/14,475/7.1);
+        title.setStyle("-fx-font: bold 62 arial; -fx-base: rgb(170,0,0); -fx-text-fill: rgb(0,0,0);");
 
-        Label title = new Label("Internet Relay Chat");
-        title.relocate(700*3.5/14,475/7.1);
-        title.setStyle("-fx-font: 42 arial; -fx-base: rgb(170,0,0); -fx-text-fill: rgb(0,0,0);");
-
-        Label input = new Label("Enter a username to start");
+        Label input = new Label("Enter a username to start:");
         input.relocate(700*4.5/14 + 15,475*2.8/7.1);
         input.setStyle("-fx-font: 22 arial; -fx-base: rgb(170,0,0); -fx-text-fill: rgb(0,0,0);");
 
-        username = new TextField();
-        username.relocate(700*3.9/14 + 17 + 15,475*3.6/7.1);
-        username.setStyle("-fx-font: 22 arial; -fx-text-fill: rgb(0,0,0);");
-        username.setPrefHeight(475*0.8/7.1);
+        usernameTextField = new TextField();
+        usernameTextField.relocate(700*3.9/14 + 17 + 15,475*3.6/7.1);
+        usernameTextField.setStyle("-fx-font: 22 arial; -fx-text-fill: rgb(0,0,0);");
+        usernameTextField.setPrefHeight(475*0.8/7.1);
 
-        join_chat = new Button("Join Chat");
-        join_chat.relocate(500*9.9/14+700.0/4-50,475*5.5/7.1);
-        join_chat.setPrefSize(700*2.9/14,475*0.8/7.1);
-        join_chat.setStyle("-fx-font: 25 arial;");
+        joinChatButton = new Button("Join Chat");
+        joinChatButton.relocate(500*9.9/14+700.0/4-50,475*5.5/7.1);
+        joinChatButton.setPrefSize(700*2.9/14,475*0.8/7.1);
+        joinChatButton.setStyle("-fx-font: 25 arial;");
+        joinChatButton.setDisable(true);
 
         getChildren().add(title);
         getChildren().add(input);
-        getChildren().add(username);
-        getChildren().add(join_chat);
+        getChildren().add(usernameTextField);
+        getChildren().add(joinChatButton);
     }
 
-    public Button getJoin_chat() {
-        return join_chat;
+    public Button getJoinChatButton() {
+        return joinChatButton;
     }
 
-    public TextField getUsername() {
-        return username;
+    public TextField getUsernameTextField() {
+        return usernameTextField;
     }
-
 }
