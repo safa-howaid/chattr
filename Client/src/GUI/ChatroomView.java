@@ -1,8 +1,11 @@
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
-import javafx.scene.layout.Pane;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 
+import javax.swing.text.Element;
+import javax.swing.text.html.ImageView;
 import java.time.format.DateTimeFormatter;
 
 public class ChatroomView extends Pane {
@@ -21,9 +24,16 @@ public class ChatroomView extends Pane {
     private Label usernameLabel;
     private Button LeaveButton;
     private Client model;
+    private ImageView iv;
 
     public ChatroomView(Client model){
         this.model = model;
+
+        /*BackgroundImage myBI= new BackgroundImage(new Image("file:image2.jpg",700,475,false,true),
+                BackgroundRepeat.REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT,
+                BackgroundSize.DEFAULT);
+
+        setBackground(new Background(myBI));*/
         chatList = new ListView<>();
         messages = new String[]{"User1:Hey!", "User2:Hey! How are you?"};
 

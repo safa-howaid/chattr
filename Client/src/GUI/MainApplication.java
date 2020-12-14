@@ -9,6 +9,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
+import javax.swing.text.html.ImageView;
 import java.time.format.DateTimeFormatter;
 
 
@@ -35,9 +36,11 @@ public class MainApplication extends Application {
         Scene chatroomScene = new Scene(chatroomView, 700, 475);
         Scene startupScene = new Scene(startupView,700,475);
 
+
         primaryStage.setScene(startupScene);
         primaryStage.setResizable(false);
         primaryStage.show();
+
 
         chatroomView.getNewMessage().setOnKeyReleased(this::handle);
 
