@@ -1,6 +1,5 @@
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -15,7 +14,17 @@ public class Client {
     private ObservableList<String> onlineUsers;
     private ObservableList<Message> messages;
     private String username;
+    private Thread receiverThread;
 
+    public Client() {
+        onlineUsers = FXCollections.observableArrayList();
+        messages = FXCollections.observableArrayList();
+        username = null;
+    }
+    /*
+        Tries to connect to Server and initializes I/O streams.
+        Returns true if a connection was made. Else, returns false.
+     */
     public boolean connectedToServer() {
         try {
             socket = new Socket(SERVER_NAME, SERVER_PORT_NUMBER);
@@ -28,25 +37,32 @@ public class Client {
         return false;
     }
 
+    /*
+        Sends the Server a request to join with the given username.
+        If successful, updates client's username attribute and
+        updates the chat and user lists with the information retrieved from
+        the Server's response. Return true if successful. Else, returns false.
+     */
     public boolean attemptJoin(String username) {
         try {
             out.writeObject(new Join(username));
-
             Object response  = in.readObject();
-            System.out.println(response);
+
             if (response instanceof Success) {
                 this.username = username;
-                onlineUsers = FXCollections.observableArrayList(((Success) response).onlineUsers);
-                messages = FXCollections.observableArrayList(((Success) response).messages);
+                onlineUsers = FXCollections.observableArrayList(((Success) response).getOnlineUsers());
+                messages = FXCollections.observableArrayList(((Success) response).getMessages());
                 return true;
-            } // the username will not be deleted in the server, but it will be deleted in other threads
-            else return false;
+            }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return false;
     }
 
+    /*
+        Creates a message, sends it to the server, and adds it to the message list.
+     */
     public void sendMessage(String message) {
         try {
             Message newMessage = new Message(username, message);
@@ -62,6 +78,7 @@ public class Client {
         try {
             if (username != null) {
                 out.writeObject(new Leave(username));
+                receiverThread.interrupt();
             }
 
         } catch (IOException e) {
@@ -69,12 +86,17 @@ public class Client {
         }
     }
 
+    /*
+        Starts a new thread for receiving events
+     */
     public void startEventReceiver() {
-        // Start a new thread for receiving events
-        Thread receiverThread = new Thread(this::eventReceiverLoop);
+        receiverThread = new Thread(this::eventReceiverLoop);
         receiverThread.start();
     }
 
+    /*
+        Keeps trying to accept events and handles each event accordingly.
+     */
     private void eventReceiverLoop() {
         try {
             Object event;
@@ -82,22 +104,17 @@ public class Client {
                 event = in.readObject();
 
                 if (event instanceof Join) {
-                    onlineUsers.add(((Join) event).username);
-                    messages.add(new Message("SERVER", ((Join) event).username + " has joined"));
-//                    Display join system message on console for testing
-                    System.out.println("SERVER: " + ((Join) event).username + " has joined");
+                    onlineUsers.add(((Join) event).getSource());
+                    messages.add(new Message("SERVER", ((Join) event).getSource() + " has joined"));
                 }
                 else if (event instanceof Leave) {
-                    onlineUsers.remove(((Leave) event).username);
-                    messages.add(new Message("SERVER", ((Leave) event).username + " has left"));
-//                    Display leave system message on console for testing
-                    System.out.println("SERVER: " + ((Leave) event).username + " has left");
+                    onlineUsers.remove(((Leave) event).getSource());
+                    messages.add(new Message("SERVER", ((Leave) event).getSource() + " has left"));
                 }
                 else if (event instanceof Message) {
                     messages.add((Message) event);
-//                    Display message received on console for testing
-                    System.out.println(event);
                 }
+
                 System.out.println(event);
             }
         } catch (IOException | ClassNotFoundException e) {
@@ -111,5 +128,9 @@ public class Client {
 
     public ObservableList<Message> getMessages() {
         return messages;
+    }
+
+    public String getUsername() {
+        return username;
     }
 }

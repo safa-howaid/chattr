@@ -1,23 +1,17 @@
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.util.Callback;
-
-import java.time.format.DateTimeFormatter;
 
 public class ChatroomView extends Pane {
     private ListView<Message> chatList;
     private ListView<String> userList;
-    private ObservableList<Message> obsMessages;
-    private ObservableList<String> obsUsers;
     private TextField newMessage;
-    private Button send_button;
+    private Button sendButton;
     private Label chatBoxLabel;
     private Label userListLabel;
+    private Label usernameLabel;
+    private Button LeaveButton;
     private Client model;
 
     public ChatroomView(Client model){
@@ -28,32 +22,37 @@ public class ChatroomView extends Pane {
         chatList.relocate(pixelLength(0.6),pixelWidth(0.8));
         chatList.setPrefSize(pixelLength(9.3)-pixelLength(0.6),pixelWidth(5.8)-pixelWidth(0.8));
 
-
         userList.relocate(pixelLength(9.7),pixelWidth(0.8));
         userList.setPrefSize(pixelLength(13.3)-pixelLength(9.7), pixelWidth(5.8)-pixelWidth(0.8));
-
 
         newMessage = new TextField();
         newMessage.relocate(pixelLength(0.6),pixelWidth(6.1));
         newMessage.setPrefSize(pixelLength(7.6)-pixelLength(0.6),pixelWidth(6.8)-pixelWidth(6.1));
 
-
-        send_button = new Button("Send");
-        send_button.setStyle("-fx--font: 22 arial;");
-        send_button.relocate(pixelLength(7.9),pixelWidth(6.1));
-        send_button.setPrefSize(pixelLength(9.3)-pixelLength(7.9),pixelWidth(6.8)-pixelWidth(6.1));
-        send_button.setDisable(true);
+        sendButton = new Button("Send");
+        sendButton.setStyle("-fx--font: 22 arial;");
+        sendButton.relocate(pixelLength(7.9),pixelWidth(6.1));
+        sendButton.setPrefSize(pixelLength(9.3)-pixelLength(7.9),pixelWidth(6.8)-pixelWidth(6.1));
+        sendButton.setDisable(true);
 
         chatBoxLabel = new Label("Chat");
-        chatBoxLabel.setStyle("-fx--font: 32 arial;");
+        chatBoxLabel.setStyle("-fx--font: bold 32 arial;");
         chatBoxLabel.relocate(pixelLength(4.6),pixelWidth(0.4));
 
         userListLabel = new Label("Online Users");
-        userListLabel.setStyle("-fx--font: 32 arial;");
+        userListLabel.setStyle("-fx--font: bold 32 arial;");
         userListLabel.relocate(pixelLength(10.8),pixelWidth(0.4));
 
-        getChildren().addAll(send_button,chatList,userList,newMessage,chatBoxLabel,userListLabel);
+        LeaveButton = new Button("Leave");
+        LeaveButton.setStyle("-fx--font: 22 arial; -fx--fill: rgb(220,0,0);");
+        LeaveButton.setPrefSize(pixelLength(11)-pixelLength(7.9),pixelWidth(6.6)-pixelWidth(6.1));
+        LeaveButton.relocate(pixelLength(10.1),pixelWidth(6.3));
 
+        usernameLabel = new Label("");
+        usernameLabel.setStyle("-fx--font: bold 22 arial;");
+        usernameLabel.relocate(pixelLength(9.8),pixelWidth(5.9));
+
+        getChildren().addAll(sendButton,chatList,userList,newMessage,chatBoxLabel,userListLabel,usernameLabel,LeaveButton);
     }
 
     public double pixelWidth(double num){
@@ -64,8 +63,8 @@ public class ChatroomView extends Pane {
         return 700*num/14;
     }
 
-    public Button getSend_button() {
-        return send_button;
+    public Button getSendButton() {
+        return sendButton;
     }
 
     public ListView<Message> getChatList() {
@@ -81,9 +80,19 @@ public class ChatroomView extends Pane {
     }
 
     public void updateMessages() {
-        chatList.setItems(FXCollections.observableList(model.getMessages()));
+        Platform.runLater(() -> chatList.setItems(FXCollections.observableList(model.getMessages())));
+
     }
     public void updateUserList() {
-        userList.setItems(FXCollections.observableArrayList(model.getOnlineUsers()));
+        Platform.runLater(() -> userList.setItems(FXCollections.observableArrayList(model.getOnlineUsers())));
+
+    }
+
+    public Label getUsernameLabel() {
+        return usernameLabel;
+    }
+
+    public Button getLeaveButton() {
+        return LeaveButton;
     }
 }

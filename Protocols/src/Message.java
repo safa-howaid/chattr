@@ -1,18 +1,21 @@
 import java.io.Serializable;
-import java.time.format.DateTimeFormatter;
 
 public class Message extends ClientEvent implements Serializable {
-    String username;
-    String message;
+    private String message;
 
-    public Message(String username, String message) {
-        this.username = username;
+    public Message(String source, String message) {
+        super(source);
         this.message = message;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    // String representation of the Message request. Used for debugging.
     @Override
     public String toString() {
-        return username + ": " + message;
+        return getSource() + ": " + message;
     }
 
 }
